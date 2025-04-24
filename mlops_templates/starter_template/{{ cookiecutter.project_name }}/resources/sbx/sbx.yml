@@ -1,0 +1,74 @@
+resources:
+  jobs:
+    {{ cookiecutter.project_name }}:
+      name: {{ cookiecutter.project_name }}
+
+      # Define the job cluster configuration with libraries
+      job_clusters:
+        - job_cluster_key: template_job_cluster
+          new_cluster:
+            spark_version: 14.3.x-scala2.12
+            spark_conf:
+              spark.driver.maxResultSize: 0
+            azure_attributes:
+              first_on_demand: 1
+              availability: ON_DEMAND_AZURE
+              spot_bid_max_price: 100
+            node_type_id: Standard_DS3_v2
+            driver_node_type_id: Standard_DS3_v2
+            custom_tags:
+              business_function: All
+              business_segment: Sigmoid
+              cost_center: '29800191'
+              business_region: Global
+              business_owner: christian.lorente@gmail.com
+              mlops: testing
+            enable_elastic_disk: true
+            policy_id: 00041FBEDCAFBB84
+            workload_type:
+              clients:
+                notebooks: false
+                jobs: true
+            data_security_mode: SINGLE_USER
+            runtime_engine: STANDARD
+            autoscale:
+              min_workers: 1
+              max_workers: 1
+
+      tasks:
+      - task_key: set_vars
+        job_cluster_key: template_job_cluster
+        notebook_task:
+          notebook_path: ../../{{ cookiecutter.project_name }}/src/set_vars.py
+        
+
+      - task_key: ingestion
+        depends_on:
+        - task_key: set_vars
+        spark_python_task:
+          python_file: ../../run.py
+          parameters:
+          - '{{ cookiecutter.project_name }}.src.ingestion.preprocess.main_ingestions'
+        job_cluster_key: template_job_cluster
+
+      - task_key: training
+        depends_on:
+        - task_key: ingestion
+        spark_python_task:
+          python_file: ../../run.py
+          parameters:
+          - '{{ cookiecutter.project_name }}.src.training.train.main_training'
+        job_cluster_key: template_job_cluster
+        
+      - task_key: prediction
+        depends_on:
+        - task_key: training
+        spark_python_task:
+          python_file: ../../run.py
+          parameters:
+          - '{{ cookiecutter.project_name }}.src.prediction.prediction.main_predictions'
+        job_cluster_key: template_job_cluster
+      
+      parameters:
+      - name: brand
+        default: Sigmoid

@@ -1,0 +1,126 @@
+# Databricks job configuration file for MLOps classification template
+
+
+resources:
+  jobs:
+    # Definition of a job
+    {{  cookiecutter.project_name }}:
+      name: {{  cookiecutter.project_name }}
+      tasks:
+        # Pre-execution task
+        - task_key: pre_execution
+          job_cluster_key: templates_cluster_ml_dev
+          notebook_task:
+            # Path to the notebook that sets environment variables or initial setup
+            notebook_path: ../../{{  cookiecutter.project_name }}/set_vars.py
+            base_parameters:
+              current_run_id: "{{ "{{" }} job.run_id {{ "}}" }}"
+          
+       
+        # Ingestion and preprocessing task
+        - task_key: ingestion
+          depends_on:
+            - task_key: pre_execution
+          spark_python_task:
+            # Path to the Python file that handles data ingestion and preprocessing
+            python_file: ../../run.py
+            parameters: [{{  cookiecutter.project_name }}.ingestion.preprocess.main_ingestion]
+          
+          job_cluster_key: templates_cluster_ml_dev
+
+
+        # Data drift detection task
+        - task_key: data_drift
+          depends_on:
+            - task_key: ingestion
+          spark_python_task:
+            # Path to the Python file that handles data drift detection
+            python_file: ../../run.py
+            parameters: [{{  cookiecutter.project_name }}.ingestion.preprocess.main_drift_detection]
+          
+          job_cluster_key: templates_cluster_ml_dev
+
+
+        # Hyperparameter tuning task
+        - task_key: tuning
+          depends_on:
+            - task_key: data_drift
+          spark_python_task:
+            # Path to the Python file that handles hyperparameter tuning
+            python_file: ../../run.py
+            parameters: [{{  cookiecutter.project_name }}.tuning.hyperparameter_tuning.main_tuning]
+          
+          job_cluster_key: templates_cluster_ml_dev
+         
+        # Model training task
+        - task_key: training
+          depends_on:
+            - task_key: tuning
+          spark_python_task:
+            # Path to the Python file that handles model training
+            python_file: ../../run.py
+            parameters: [{{  cookiecutter.project_name }}.training.model_training.main_training]
+          
+          job_cluster_key: templates_cluster_ml_dev
+
+
+        # Prediction task
+        - task_key: prediction
+          depends_on:
+            - task_key: training
+          spark_python_task:
+            # Path to the Python file that handles model prediction
+            python_file: ../../run.py
+            parameters: [{{  cookiecutter.project_name }}.prediction.model_prediction.main_prediction]
+          
+          job_cluster_key: templates_cluster_ml_dev
+
+
+        # Post-execution task
+        - task_key: post_execution
+          depends_on:
+            - task_key: prediction
+          job_cluster_key: templates_cluster_ml_dev
+          notebook_task:
+            # Path to the notebook that handles post-execution tasks like logging or clean-up
+            notebook_path: ../../{{  cookiecutter.project_name }}/utils/mlflow_utils/post_execution.py
+          
+      job_clusters:
+        - job_cluster_key: templates_cluster_ml_dev
+          new_cluster:
+            spark_version: 13.3.x-scala2.12
+            spark_conf:
+              spark.driver.maxResultSize: 0
+            azure_attributes:
+              first_on_demand: 1
+              availability: ON_DEMAND_AZURE
+              spot_bid_max_price: 100
+            node_type_id: Standard_DS3_v2
+            driver_node_type_id: Standard_DS3_v2
+            custom_tags:
+              business_function: All
+              business_segment: Sigmoid
+              cost_center: '29800191'
+              business_region: Global
+              business_owner: christian.lorente@gmail.com
+              mlops: testing
+            enable_elastic_disk: true
+            policy_id: 0016A56FF9065399
+            workload_type:
+              clients:
+                notebooks: false
+                jobs: true
+            data_security_mode: SINGLE_USER
+            runtime_engine: STANDARD
+            autoscale:
+              min_workers: 1
+              max_workers: 1
+
+      # Job parameters
+      parameters:
+      - name: brand
+        default: "Sigmoid"
+        # Parameter to specify the brand, with a default value of "Sigmoid"
+      - name: log_artifacts_to_mlflow
+        default: "false"
+        # Parameter to determine whether to log artifacts to MLflow, default is "false"

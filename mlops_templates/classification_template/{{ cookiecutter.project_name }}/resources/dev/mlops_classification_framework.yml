@@ -1,0 +1,98 @@
+# Databricks job configuration file for MLOps classification template
+
+
+resources:
+  jobs:
+    # Definition of a job
+    {{ cookiecutter.project_name }}:
+      name: {{ cookiecutter.project_name }}
+      tasks:
+        # Pre-execution task
+        - task_key: pre_execution
+          existing_cluster_id: {{ cookiecutter.existing_cluster_id }} # already existing cluster
+          notebook_task:
+            # Path to the notebook that sets environment variables or initial setup
+            notebook_path: ../../{{ cookiecutter.project_name }}/set_vars.py
+            base_parameters:
+              current_run_id: "{{ "{{" }} job.run_id {{ "}}" }}"
+
+          
+       
+        # Ingestion and preprocessing task
+        - task_key: ingestion
+          depends_on:
+            - task_key: pre_execution
+          spark_python_task:
+            # Path to the Python file that handles data ingestion and preprocessing
+            python_file: ../../run.py
+            parameters: [{{ cookiecutter.project_name }}.ingestion.preprocess.main_ingestion]
+          
+          existing_cluster_id: {{ cookiecutter.existing_cluster_id }} # already existing cluster
+
+
+        # Data drift detection task
+        - task_key: data_drift
+          depends_on:
+            - task_key: ingestion
+          spark_python_task:
+            # Path to the Python file that handles data drift detection
+            python_file: ../../run.py
+            parameters: [{{ cookiecutter.project_name }}.ingestion.preprocess.main_drift_detection]
+          
+          existing_cluster_id: {{ cookiecutter.existing_cluster_id }} # already existing cluster
+
+
+        # Hyperparameter tuning task
+        - task_key: tuning
+          depends_on:
+            - task_key: data_drift
+          spark_python_task:
+            # Path to the Python file that handles hyperparameter tuning
+            python_file: ../../run.py
+            parameters: [{{ cookiecutter.project_name }}.tuning.hyperparameter_tuning.main_tuning]
+          
+          existing_cluster_id: {{ cookiecutter.existing_cluster_id }} # already existing cluster
+         
+        # Model training task
+        - task_key: training
+          depends_on:
+            - task_key: tuning
+          spark_python_task:
+            # Path to the Python file that handles model training
+            python_file: ../../run.py
+            parameters: [{{ cookiecutter.project_name }}.training.model_training.main_training]
+          
+          existing_cluster_id: {{ cookiecutter.existing_cluster_id }} # already existing cluster
+
+
+        # Prediction task
+        - task_key: prediction
+          depends_on:
+            - task_key: training
+          spark_python_task:
+            # Path to the Python file that handles model prediction
+            python_file: ../../run.py
+            parameters: [{{ cookiecutter.project_name }}.prediction.model_prediction.main_prediction]
+          
+          existing_cluster_id: {{ cookiecutter.existing_cluster_id }} # already existing cluster
+
+
+        # Post-execution task
+        - task_key: post_execution
+          depends_on:
+            - task_key: prediction
+          existing_cluster_id: {{ cookiecutter.existing_cluster_id }} # already existing cluster
+          notebook_task:
+            # Path to the notebook that handles post-execution tasks like logging or clean-up
+            notebook_path: ../../{{ cookiecutter.project_name }}/utils/mlflow_utils/post_execution.py
+          
+
+
+      # Job parameters
+      parameters:
+      - name: brand
+        default: "Sigmoid"
+        # Parameter to specify the brand, with a default value of "Sigmoid"
+      - name: log_artifacts_to_mlflow
+        default: "false"
+        # Parameter to determine whether to log artifacts to MLflow, default is "false"

@@ -1,0 +1,51 @@
+# Path for storing output files
+input_file_path: mlops-classification-templates/inputs/diabetes.csv
+output_storage_path: mlops-classification-templates/outputs/{{ cookiecutter.project_name }}
+
+# Column to be predicted (target variable)
+target_column: Outcome
+
+# Features to be used for prediction
+feature_columns:
+  - Pregnancies
+  - Glucose
+  - BloodPressure
+  - SkinThickness
+  - Insulin
+  - BMI
+  - DiabetesPedigreeFunction
+  - Age
+
+# Environment specification (development in this case)
+env: sbx
+
+# Name of the experiment
+experiment_name: /{{ cookiecutter.project_name }}
+
+mlops_catalog: hub_mlops_sbx
+mlops_b_schema: b_mlops
+mlops_s_schema: s_mlops
+mlops_b_volume: b_mlops_volume
+mlops_s_volume: s_mlops_volume
+
+# Output data file names
+output_data:
+  preprocessed: preprocssed_data.csv  # File for preprocessed data
+  test_data: test_data.csv
+  train_data: train_data.csv
+  result_data: result.csv  # File for results of prediction
+  batch_result_data: batch_result.csv  # File for results of batch prediction
+  model: model.pkl
+  drift_report: drift_report.csv
+
+hyperparameters:
+  C:
+    - 0.1
+    - 1
+    - 10
+  solver:
+    - liblinear
+    - saga
+
+# Secret scope for accessing sensitive information
+secret_scope: mlops_secret_scope

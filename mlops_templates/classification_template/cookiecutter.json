@@ -1,0 +1,6 @@
+{
+    "project_name": "mlops_classification_framework",
+    "databricks_host": "https://adb-901793936155813.13.azuredatabricks.net/",
+    "existing_cluster_id": "1001-103035-kme45lmn",
+    "user_name" : "user_name@gmail.com"
+}

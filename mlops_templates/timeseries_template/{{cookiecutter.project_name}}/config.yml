@@ -1,0 +1,25 @@
+input_file_path: mlops-timeseries-templates/inputs/timeseries.csv
+output_storage_path: mlops-timeseries-templates/outputs/{{ cookiecutter.project_name }}
+target_columns: sales
+feature_columns: family
+
+env: dev
+experiment_name: /{{ cookiecutter.project_name }}
+
+mlops_catalog: hub_mlops_sbx
+mlops_b_schema: b_mlops
+mlops_s_schema: s_mlops
+mlops_b_volume: b_mlops_volume
+mlops_s_volume: s_mlops_volume
+
+
+Arima_order:
+  p: 2
+  d: 0
+  q: 1
+
+output_data:
+  preprocessed: preprocssed_data.csv
+  resutl_data: result.csv
+
+key_vault: mlops_secret_scope

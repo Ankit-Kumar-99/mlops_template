@@ -1,0 +1,41 @@
+resources:
+  jobs:
+    {{ cookiecutter.project_name }}:
+      name: {{ cookiecutter.project_name }}
+      tasks:
+        - task_key: pre_execution
+          existing_cluster_id: '{{ cookiecutter.existing_cluster_id }}'
+          notebook_task:
+            notebook_path: ../../{{ cookiecutter.project_name }}/set_vars.py
+            base_parameters:
+              current_run_id: "{{ "{{" }} job.run_id {{ "}}" }}"
+          
+        
+        - task_key: ingestion
+          depends_on:
+            - task_key: pre_execution
+          spark_python_task:
+            python_file: ../../run.py
+            parameters: [{{ cookiecutter.project_name }}.ingestion.preprocess.main_ingestions]
+          existing_cluster_id: {{ cookiecutter.existing_cluster_id }}
+
+        - task_key: training_and_forecasting
+          depends_on:
+            - task_key: ingestion
+          spark_python_task:
+            python_file: ../../run.py
+            parameters: [{{ cookiecutter.project_name }}.training.parallel_model_training.main_forecast_all_skus]
+          existing_cluster_id: {{ cookiecutter.existing_cluster_id }}
+
+        - task_key: post_execution
+          depends_on:
+            - task_key: training_and_forecasting
+          existing_cluster_id: {{ cookiecutter.existing_cluster_id }}
+          notebook_task:
+            notebook_path: ../../{{ cookiecutter.project_name }}/utils/mlflow_utils/post_execution.py
+        
+      parameters:
+      - name: brand
+        default: "Sigmoid"
+      - name: log_artifacts_to_mlflow
+        default: "false"

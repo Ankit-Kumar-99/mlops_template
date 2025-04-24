@@ -1,0 +1,41 @@
+resources:
+  jobs:
+    {{ cookiecutter.project_name }}:
+      name: {{ cookiecutter.project_name }}
+      tasks:
+      - task_key: set_vars
+        existing_cluster_id: {{ cookiecutter.existing_cluster_id }}
+        notebook_task:
+          notebook_path: ../../{{ cookiecutter.project_name }}/src/set_vars.py
+        
+
+      - task_key: ingestion
+        depends_on:
+        - task_key: set_vars
+        spark_python_task:
+          python_file: ../../run.py
+          parameters:
+          - '{{ cookiecutter.project_name }}.src.ingestion.preprocess.main_ingestions'
+        existing_cluster_id: {{ cookiecutter.existing_cluster_id }}
+
+      - task_key: training
+        depends_on:
+        - task_key: ingestion
+        spark_python_task:
+          python_file: ../../run.py
+          parameters:
+          - '{{ cookiecutter.project_name }}.src.training.train.main_training'
+        existing_cluster_id: {{ cookiecutter.existing_cluster_id }}
+        
+      - task_key: prediction
+        depends_on:
+        - task_key: training
+        spark_python_task:
+          python_file: ../../run.py
+          parameters:
+          - '{{ cookiecutter.project_name }}.src.prediction.prediction.main_predictions'
+        existing_cluster_id: {{ cookiecutter.existing_cluster_id }}
+      
+      parameters:
+      - name: brand
+        default: Sigmoid

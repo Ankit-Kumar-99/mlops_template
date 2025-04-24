@@ -1,0 +1,19 @@
+{
+    "templates": {
+        "mlops_starter_framework": {
+            "path": "./starter_template",
+            "title": "mlops_starter_framework",
+            "description": "A cookiecutter template for a mlops_starter_framework"
+        },
+        "mlops_timeseries_framework": {
+            "path": "./timeseries_template",
+            "title": "mlops_timeseries_framework",
+            "description": "A cookiecutter template for a mlops_timeseries_framework"
+        },
+        "mlops_classification_framework": {
+            "path": "./classification_template",
+            "title": "mlops_classification_framework",
+            "description": "A cookiecutter template for a mlops_classification_framework"
+        }
+    }
+}

@@ -1,0 +1,22 @@
+# Databricks job configuration file for MLOps classification template - batch prediction
+
+resources:
+  jobs:
+    # Definition of a job
+    {{ cookiecutter.project_name }}_batch_prediction:
+      name: {{ cookiecutter.project_name }}_batch_prediction
+      schedule:
+        quartz_cron_expression: "0 0 1 * * ?" # This cron expression schedules the job to run at midnight on the first day of every month
+        timezone_id: "UTC" # Adjust the timezone as needed
+      tasks:
+
+        # Batch Prediction task
+        - task_key: batch_prediction
+          spark_python_task:
+            # Path to the Python file that handles batch prediction
+            python_file: ../../run.py
+            parameters: [{{ cookiecutter.project_name }}.prediction.batch_prediction.main_batch_prediction]
+          libraries:
+            - pypi:
+                package: "PyYAML"
+          existing_cluster_id: {{ cookiecutter.existing_cluster_id }} # already existing cluster

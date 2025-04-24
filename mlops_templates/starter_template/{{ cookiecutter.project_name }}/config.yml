@@ -1,0 +1,13 @@
+env: dev
+experiment_name: /Shared
+input data:
+  file path: path for file
+model_name: best_{{ cookiecutter.project_name }}_Model
+input_data:
+  file_path: "/Volumes/hub_dev/sandbox/test_volume/template_data/timeseriestemp/input/timeseries.csv"
+
+mlops_catalog: hub_mlops_sbx
+mlops_b_schema: b_mlops
+mlops_s_schema: s_mlops
+mlops_b_volume: b_mlops_volume
+mlops_s_volume: s_mlops_volume

@@ -1,0 +1,71 @@
+resources:
+  jobs:
+    {{ cookiecutter.project_name }}:
+      name: {{ cookiecutter.project_name }}
+      tasks:
+        - task_key: pre_execution
+          job_cluster_key: templates_cluster_ml_dev
+          notebook_task:
+            notebook_path: ../../{{ cookiecutter.project_name }}/set_vars.py
+            base_parameters:
+              current_run_id: "{{ "{{" }} job.run_id {{ "}}" }}"
+        
+        - task_key: ingestion
+          depends_on:
+            - task_key: pre_execution
+          spark_python_task:
+            python_file: ../../run.py
+            parameters: [{{ cookiecutter.project_name }}.ingestion.preprocess.main_ingestions]
+          job_cluster_key: templates_cluster_ml_dev
+
+        - task_key: training_and_forecasting
+          depends_on:
+            - task_key: ingestion
+          spark_python_task:
+            python_file: ../../run.py
+            parameters: [{{ cookiecutter.project_name }}.training.parallel_model_training.main_forecast_all_skus]
+          job_cluster_key: templates_cluster_ml_dev
+
+        - task_key: post_execution
+          depends_on:
+            - task_key: training_and_forecasting
+          job_cluster_key: templates_cluster_ml_dev
+          notebook_task:
+            notebook_path: ../../{{ cookiecutter.project_name }}/utils/mlflow_utils/post_execution.py
+
+      job_clusters:
+        - job_cluster_key: templates_cluster_ml_dev
+          new_cluster:
+            spark_version: 14.3.x-scala2.12
+            spark_conf:
+              spark.driver.maxResultSize: 0
+            azure_attributes:
+              first_on_demand: 1
+              availability: ON_DEMAND_AZURE
+              spot_bid_max_price: 100
+            node_type_id: Standard_DS3_v2
+            driver_node_type_id: Standard_DS3_v2
+            custom_tags:
+              business_function: All
+              business_segment: Sigmoid
+              cost_center: '29800191'
+              business_region: Global
+              business_owner: christian.lorente@gmail.com
+              mlops: testing
+            enable_elastic_disk: true
+            policy_id: 0011E4AB1AB84289
+            workload_type:
+              clients:
+                notebooks: false
+                jobs: true
+            data_security_mode: SINGLE_USER
+            runtime_engine: STANDARD
+            autoscale:
+              min_workers: 1
+              max_workers: 1
+
+      parameters:
+      - name: brand
+        default: "Sigmoid"
+      - name: log_artifacts_to_mlflow
+        default: "false"

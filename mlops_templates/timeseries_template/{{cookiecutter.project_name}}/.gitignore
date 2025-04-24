@@ -1,0 +1,17 @@
+.databricks/
+build/
+dist/
+__pycache__/
+*.egg-info
+.venv/
+scratch/**
+!scratch/README.md
+databricks_ref.yml
+.DS_Store
+databricks.exe 
+metadata/
+.vscode
+.github
+sales_forcast
+datasets/
+data_drift/

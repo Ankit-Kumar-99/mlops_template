@@ -1,0 +1,51 @@
+bundle:
+  # Name of the MLOps framework bundle
+  name: {{ cookiecutter.project_name }}
+
+#Include all YAML files from the resources directory
+include:
+  - resources/sbx/*.yml
+
+# Define different deployment targets
+targets:
+  # Development environment
+  dev:
+    workspace:
+      host: {{ cookiecutter.databricks_host }}
+    permissions:
+      - level: CAN_MANAGE
+        user_name: {{ cookiecutter.user_name }}
+
+  # Test environment
+  tst:
+    workspace:
+      host: {{ cookiecutter.databricks_host }}
+    permissions:
+      - level: CAN_MANAGE
+        user_name: {{ cookiecutter.user_name }}
+
+  # Production environment
+  prod:
+    mode: production
+    workspace:
+      host: {{ cookiecutter.databricks_host }}
+    permissions:
+      - level: CAN_MANAGE
+        user_name: {{ cookiecutter.user_name }}
+
+  # Sandbox environment (for feature development)
+  sbx:
+    default: true
+    workspace:
+      host: {{ cookiecutter.databricks_host }}
+    permissions:
+      - level: CAN_MANAGE
+        user_name: {{ cookiecutter.user_name }}
+
+resources:
+  experiments:
+    {{ cookiecutter.project_name }}_ex:
+      name: "/Users/${workspace.current_user.userName}/{{ cookiecutter.project_name }}_ex"
+      permissions:
+        - level: CAN_MANAGE
+          user_name: {{ cookiecutter.user_name }}

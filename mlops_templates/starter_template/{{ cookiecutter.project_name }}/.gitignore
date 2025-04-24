@@ -1,0 +1,18 @@
+.databricks/
+build/
+dist/
+__pycache__/
+*.egg-info
+.venv/
+scratch/**
+!scratch/README.md
+databricks_ref.yml
+.DS_Store
+databricks.exe 
+metadata/
+{{ cookiecutter.project_name }}/src/utils/mlflow_utils/send_email.py
+mlops_framework/datasets
+datasets
+{{ cookiecutter.project_name }}/utils/mlflow_utils/pandas_blob.py
+.vscode
+init_script.sh

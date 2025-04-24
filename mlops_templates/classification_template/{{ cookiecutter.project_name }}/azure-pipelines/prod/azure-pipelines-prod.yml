@@ -1,0 +1,22 @@
+trigger:
+- prod
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+
+- script: |
+    curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh |  sh
+    databricks --version
+  displayName: 'Databricks Install'
+
+- script: |
+    export DATABRICKS_HOST=$(prod_host)
+    export DATABRICKS_TOKEN=$(prod_token)
+    echo "Environment: prod"
+    # databricks configure
+    databricks bundle validate -t prod
+    databricks bundle deploy -t prod
+    
+  displayName: " bundle validate and deploy "
